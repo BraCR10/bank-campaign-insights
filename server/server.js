@@ -36,24 +36,21 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-// Local development: start HTTP server
-if (process.env.NODE_ENV !== 'production') {
-  const server = app.listen(config.server.port, () => {
-    console.log(`Server running on port ${config.server.port} in ${config.server.nodeEnv} mode`);
-    console.log(`Health check: http://localhost:${config.server.port}/api/health`);
+// Start HTTP server (Render, Railway, local dev — any non-serverless environment)
+const server = app.listen(config.server.port, () => {
+  console.log(`Server running on port ${config.server.port} in ${config.server.nodeEnv} mode`);
+  console.log(`Health check: http://localhost:${config.server.port}/api/health`);
+});
+
+const gracefulShutdown = () => {
+  console.log('Received shutdown signal, closing server gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
   });
+};
 
-  const gracefulShutdown = () => {
-    console.log('Received shutdown signal, closing server gracefully...');
-    server.close(() => {
-      console.log('Server closed');
-      process.exit(0);
-    });
-  };
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
-  process.on('SIGTERM', gracefulShutdown);
-  process.on('SIGINT', gracefulShutdown);
-}
-
-// Vercel serverless export
 export default app;
