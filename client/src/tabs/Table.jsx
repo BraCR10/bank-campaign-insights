@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"; //controlan cambios y recarga de tabla
 import { useActiveFilter } from '../context/FilterContext';  //importamos filtros globales
 import { useToastContext } from '../context/ToastContext';
+import apiClient from '../services/api';
 
 function Table() {
 
@@ -19,7 +20,6 @@ function Table() {
   const [sortColumn, setSortColumn] = useState(null); // columna a ordenar
   const [sortDirection, setSortDirection] = useState("asc"); // 'asc' o 'desc'
   
-  const API_URL = "http://localhost:3001/api";
 
 useEffect(() => {
   fetchAllDocuments(page, sortColumn, sortDirection);
@@ -44,18 +44,8 @@ const fetchAllDocuments = async (currentPage = page, column = sortColumn, direct
       ...filterEntries
     });
 
-    console.log("Active Filter:", activeFilter);
-    console.log("Query Params enviados:", activeFilter?.queryParams);
-    console.log("URL Final:", `${API_URL}/documents?${params.toString()}`);
-
-    const res = await fetch(`${API_URL}/documents?${params.toString()}`, {
-      headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`
-        }
-    });
-
-    const data = await res.json();
+    const res = await apiClient.get(`/documents?${params.toString()}`);
+    const data = res.data;
 
     if (data.success) {
       setTodosDocuments(data.data);
@@ -63,16 +53,13 @@ const fetchAllDocuments = async (currentPage = page, column = sortColumn, direct
       setTotalPages(data.pagination.totalPages);
     } else {
       console.error("Error fetching documents:", data.message);
-      if (res.status === 403) {
-        setPermissionDenied(true);
-        showError('No tienes permiso para realizar esta acción. Contacta a tu administrador si necesitas acceso.');
-      } else {
-        showError(data.message || 'Error al cargar los documentos.');
-      }
+      showError(data.message || 'Error al cargar los documentos.');
     }
   } catch (error) {
-    console.error("Fetch error:", error);
-    showError('Error al cargar los documentos. Intenta nuevamente.');
+    if (error.status === 403) {
+      setPermissionDenied(true);
+    }
+    showError(error.message || 'Error al cargar los documentos. Intenta nuevamente.');
   }
 };
 
@@ -115,26 +102,8 @@ const exportToCSV = async () => {
       ...filterEntries
     });
 
-    console.log("Filtros aplicados en export:", filterEntries);
-    console.log("URL CSV:", `${API_URL}/documents?${params.toString()}`);
-
-    const response = await fetch(`${API_URL}/documents?${params.toString()}`, {
-      headers: {
-         "Content-Type": "application/json",
-          Authorization: `Bearer ${sessionStorage.getItem("token")}`
-      }
-    });
-
-    if (!response.ok) {
-      if (response.status === 403) {
-        showError('No tienes permiso para realizar esta acción. Contacta a tu administrador si necesitas acceso.');
-        return;
-      }
-      throw new Error("Error al obtener datos");
-    }
-
-    const data = await response.json();
-    const documentos = data.data;
+    const response = await apiClient.get(`/documents?${params.toString()}`);
+    const documentos = response.data.data;
 
     if (!documentos.length) {
       showError('No hay datos para exportar');

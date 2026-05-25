@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import s from "./Login.module.css";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import apiClient from "../../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -33,7 +33,7 @@ export default function Login() {
       setLoading(true);
 
       // Step 1: Authenticate
-      const res = await axios.post("http://localhost:3001/api/login", {
+      const res = await apiClient.post("/login", {
         email,
         password
       });
@@ -46,14 +46,7 @@ export default function Login() {
       sessionStorage.setItem("user", JSON.stringify(user));
 
       // Step 3: Check if user has documents
-      const hasDataRes = await axios.get(
-        "http://localhost:3001/api/documents/has-data",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
+      const hasDataRes = await apiClient.get("/documents/has-data");
 
       const hasDocuments = hasDataRes.data.hasDocuments;
 
