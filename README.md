@@ -1,16 +1,94 @@
-# React + Vite
+# Bank Campaign Insights
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A fullstack web application for analyzing and visualizing bank marketing campaign data, with predictive modeling and role-based access control.
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Built around the [UCI Bank Marketing dataset](https://archive.ics.uci.edu/ml/datasets/Bank+Marketing), this system enables data analysts and managers to:
 
-## React Compiler
+- Upload and validate campaign CSV files
+- Explore data through interactive dashboards and charts
+- Apply dynamic filters to segment results
+- Predict client subscription probability using logistic regression
+- Export reports in PDF or Excel format
+- Manage users and permissions by role
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+| Layer | Technologies |
+|---|---|
+| Frontend | React 19, Vite, React Router v7, Recharts, Victory, MUI |
+| Backend | Node.js, Express, MongoDB, Mongoose |
+| Auth | JWT, bcryptjs |
+| File handling | Multer, csv-parser |
+| Exports | PDFKit, ExcelJS |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Project Structure
+
+```
+bank-campaign-insights/
+├── client/               # React frontend (Vite)
+│   └── src/
+│       ├── components/   # Reusable UI components and charts
+│       ├── context/      # FilterContext, ToastContext, DashboardDataContext
+│       ├── hooks/        # useAccessControl, useDashboardData, useFileUpload, etc.
+│       └── pages/        # Login, DataLoad, Dashboard, Prediction, UserManagement, etc.
+├── server/               # Express backend
+│   └── src/
+│       ├── controllers/  # HTTP layer
+│       ├── services/     # Business logic (metrics, prediction, reports, RBAC)
+│       ├── daos/         # Data access layer
+│       ├── models/       # Mongoose schemas
+│       ├── routes/       # Route definitions
+│       ├── middleware/   # Auth, RBAC, error handling
+│       └── utils/        # CSV validators (structure, quality, business rules)
+└── docs/                 # Dataset, SRS, class diagram, and project brief
+```
+
+## Architecture
+
+- **Backend**: MVC pattern with a service layer and DAO abstraction over MongoDB.
+- **Prediction**: Strategy + Template Method patterns for logistic regression inference. Supports manager-configurable interpretation thresholds via a Decorator.
+- **Reports**: Factory pattern to produce PDF or Excel exports from the same data pipeline.
+- **Access control**: RBAC enforced at both the API middleware level and UI route level. Two roles: `manager` and `analyst`.
+- **CSV validation**: Three-stage validation pipeline — structural, data quality, and business rules.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- MongoDB instance (local or Atlas)
+
+### Backend
+
+```bash
+cd server
+cp .env.example .env   # fill in MONGO_URI, JWT_SECRET, PORT
+npm install
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd client
+cp .env.example .env   # set VITE_API_URL
+npm install
+npm run dev
+```
+
+The client runs on `http://localhost:5173` and the server on the port defined in `.env` (default `3000`).
+
+## Documentation
+
+See [`docs/`](docs/) for:
+
+- `SRS_Campañas_Bancarias_para_proyecto_de_Diseño_IIS_2025.pdf` — Software Requirements Specification
+- `IC Primer Proyecto de Diseño de Software IIS 2025.pdf` — Project brief
+- `ClassDiagram.png` — UML class diagram
+- `bank-additional-full.csv` — Source dataset
+
+## License
+
+See [LICENSE](LICENSE).
