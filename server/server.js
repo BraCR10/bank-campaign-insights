@@ -7,8 +7,21 @@ import routes from './src/routes/maincontroller.js';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: config.cors.allowedOrigins,
+  credentials: true
+}));
 app.use(express.json());
+
+// Connect before handling each request (idempotent — skips if already connected)
+app.use(async (req, res, next) => {
+  try {
+    await connectDatabase();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 app.use('/api', routes);
 
@@ -23,30 +36,24 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-const startServer = async () => {
-  try {
-    await connectDatabase();
+// Local development: start HTTP server
+if (process.env.NODE_ENV !== 'production') {
+  const server = app.listen(config.server.port, () => {
+    console.log(`Server running on port ${config.server.port} in ${config.server.nodeEnv} mode`);
+    console.log(`Health check: http://localhost:${config.server.port}/api/health`);
+  });
 
-    const server = app.listen(config.server.port, () => {
-      console.log(`Server running on port ${config.server.port} in ${config.server.nodeEnv} mode`);
-      console.log(`Health check: http://localhost:${config.server.port}/api/health`);
+  const gracefulShutdown = () => {
+    console.log('Received shutdown signal, closing server gracefully...');
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
     });
+  };
 
-    const gracefulShutdown = () => {
-      console.log('Received shutdown signal, closing server gracefully...');
-      server.close(() => {
-        console.log('Server closed');
-        process.exit(0);
-      });
-    };
+  process.on('SIGTERM', gracefulShutdown);
+  process.on('SIGINT', gracefulShutdown);
+}
 
-    process.on('SIGTERM', gracefulShutdown);
-    process.on('SIGINT', gracefulShutdown);
-
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
-};
-
-startServer();
+// Vercel serverless export
+export default app;

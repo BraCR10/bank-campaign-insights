@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import config from './environment.js';
 
 const connectDatabase = async () => {
+  if (mongoose.connection.readyState >= 1) return;
+
   try {
     const options = {
       maxPoolSize: 10,
@@ -22,7 +24,7 @@ const connectDatabase = async () => {
 
   } catch (error) {
     console.error('Failed to connect to database:', error.message);
-    process.exit(1);
+    throw error;
   }
 };
 
