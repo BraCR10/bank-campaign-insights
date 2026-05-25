@@ -3,7 +3,7 @@ import styles from "./DashboardCall.module.css"
 import Histogram from "../../../../components/histogram/Histogram"
 import GroupedBarChart from "../../../../components/groupedBarChart/GroupedBarChart";
 import AreaChartComponent from "../../../../components/areaChart/AreaChart";
-import StackedBarChart from "../../../../components/stackedChart/stackedChart";
+import StackedBarChart from "../../../../components/stackedChart/StackedChart";
 import { useContext } from "react";
 import { DashboardDataContext } from "../../../../context/DashboardDataContext";
 

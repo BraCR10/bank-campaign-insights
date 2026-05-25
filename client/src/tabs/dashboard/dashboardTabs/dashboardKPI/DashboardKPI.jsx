@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./DashboardKPI.module.css"
 import GroupedBarChart from "../../../../components/groupedBarChart/GroupedBarChart";
-import StackedBarChart from "../../../../components/stackedChart/stackedChart";
+import StackedBarChart from "../../../../components/stackedChart/StackedChart";
 import { Typography, Divider } from "@mui/material";
 import Histogram from "../../../../components/histogram/Histogram";
 import TimeSeriesChart from "../../../../components/timeSeries/TimeSeriesChart";
